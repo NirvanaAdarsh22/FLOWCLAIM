@@ -1,0 +1,25 @@
+{
+  "name": "@flowclaim/policy-engine",
+  "version": "1.0.0",
+  "description": "Directed Acyclic Graph (DAG) policy engine with Kahn's topological sorting and prerequisite pruning for FlowClaim",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "policy-engine",
+    "dag",
+    "kahn-algorithm",
+    "topological-sort",
+    "flowclaim"
+  ],
+  "author": "Ankush-123-gith-ub <ffp900h@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}
