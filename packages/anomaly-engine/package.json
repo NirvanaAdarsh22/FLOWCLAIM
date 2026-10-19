@@ -1,0 +1,20 @@
+{
+  "name": "@flowclaim/anomaly-engine",
+  "version": "1.0.0",
+  "description": "Deterministic KD-Tree nearest-neighbor anomaly detection engine for FlowClaim",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "anomaly-detection",
+    "kd-tree",
+    "flowclaim"
+  ],
+  "author": "FlowClaim Team",
+  "license": "ISC"
+}
