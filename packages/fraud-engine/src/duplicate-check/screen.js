@@ -5,7 +5,6 @@
 
 import { computeSha256 } from './hash-utils.js';
 import { computeDHash } from '../dhash/dhash.js';
-import { similarity } from '../similarity/similarity.js';
 
 /**
  * Creates the screening function bound to a FingerprintStore and configuration.
@@ -51,10 +50,10 @@ export function createScreenFunction(store, config = {}) {
       .map((c) => ({
         claimId: c.claimId,
         hammingDistance: c.hammingDistance,
-        similarity: similarity(dhash, dhash), // normalized similarity relative to dHash
-      }));
+        similarity: Math.max(0, Math.min(1, Number((1 - c.hammingDistance / 64).toFixed(6)))),
+      }))
+      .sort((a, b) => a.hammingDistance - b.hammingDistance);
 
-    // Re-calculate similarity against actual candidate if needed or store
     const status = exactDuplicateOf || candidates.length > 0 ? 'CANDIDATE' : 'CLEAR';
 
     // 3. Register current claim's fingerprints in store (idempotent)
