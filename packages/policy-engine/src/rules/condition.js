@@ -118,3 +118,61 @@ export function evaluateLeafCondition(cond, factContext) {
       };
   }
 }
+
+/**
+ * Recursively evaluates an arbitrary condition tree (leaf, all, any, not).
+ *
+ * @param {any} condition
+ * @param {Record<string, any>} factContext
+ * @returns {{ passed: boolean, reason?: string }}
+ */
+export function evaluateCondition(condition, factContext) {
+  if (!condition || typeof condition !== 'object') {
+    return { passed: false, reason: 'Invalid or null condition definition' };
+  }
+
+  // Combinator: all
+  if ('all' in condition) {
+    if (!Array.isArray(condition.all) || condition.all.length === 0) {
+      return { passed: false, reason: "Condition 'all' must contain a non-empty array" };
+    }
+    const failures = [];
+    for (const sub of condition.all) {
+      const res = evaluateCondition(sub, factContext);
+      if (!res.passed) {
+        failures.push(res.reason);
+      }
+    }
+    if (failures.length > 0) {
+      return { passed: false, reason: failures.join('; ') };
+    }
+    return { passed: true };
+  }
+
+  // Combinator: any
+  if ('any' in condition) {
+    if (!Array.isArray(condition.any) || condition.any.length === 0) {
+      return { passed: false, reason: "Condition 'any' must contain a non-empty array" };
+    }
+    const reasons = [];
+    for (const sub of condition.any) {
+      const res = evaluateCondition(sub, factContext);
+      if (res.passed) {
+        return { passed: true };
+      }
+      reasons.push(res.reason);
+    }
+    return { passed: false, reason: `None of 'any' conditions met: [${reasons.join('; ')}]` };
+  }
+
+  // Combinator: not
+  if ('not' in condition) {
+    const res = evaluateCondition(condition.not, factContext);
+    return res.passed
+      ? { passed: false, reason: `Negated condition unexpectedly passed` }
+      : { passed: true };
+  }
+
+  // Otherwise, leaf condition
+  return evaluateLeafCondition(condition, factContext);
+}
