@@ -1,0 +1,17 @@
+{
+  "name": "@flowclaim/worker",
+  "version": "1.0.0",
+  "description": "BullMQ asynchronous background worker service for FlowClaim expense verification",
+  "type": "module",
+  "main": "src/worker.js",
+  "scripts": {
+    "start": "node src/worker.js",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "dependencies": {
+    "@flowclaim/fraud-engine": "workspace:*",
+    "bullmq": "^5.41.0",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {}
+}
