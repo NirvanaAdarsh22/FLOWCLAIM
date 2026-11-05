@@ -10,7 +10,7 @@
  * @param {object} dependencies
  * @param {import('@flowclaim/shared-types').ClaimStatePort} dependencies.claimState
  * @param {import('@flowclaim/shared-types').ReceiptStoragePort} dependencies.storage
- * @param {any} [dependencies.fraudEngine]
+ * @param {any} dependencies.fraudEngine
  * @returns {Function} BullMQ processor function
  */
 export function createProcessClaimProcessor(dependencies) {
@@ -32,14 +32,37 @@ export function createProcessClaimProcessor(dependencies) {
     }
 
     // 2. Transition from QUEUED to SCREENING
+    if (context.status === 'QUEUED') {
+      await claimState.transition({
+        claimId,
+        from: 'QUEUED',
+        to: 'SCREENING',
+        transitionKey: `claim:${claimId}:transition:QUEUED-SCREENING`,
+        actor: 'SYSTEM',
+      });
+    }
+
+    // 3. Stage 2: Fraud Screening
+    const receiptObj = await storage.getObject(context.receipt.objectKey);
+    const fraudScreen = await fraudEngine.screen({
+      claimId,
+      bytes: receiptObj.bytes,
+      contentType: receiptObj.contentType || context.receipt.contentType,
+    });
+
+    await claimState.saveStageResult(claimId, 'fraud', {
+      screen: fraudScreen,
+    });
+
+    // 4. Transition from SCREENING to PARSING
     await claimState.transition({
       claimId,
-      from: 'QUEUED',
-      to: 'SCREENING',
-      transitionKey: `claim:${claimId}:transition:QUEUED-SCREENING`,
+      from: 'SCREENING',
+      to: 'PARSING',
+      transitionKey: `claim:${claimId}:transition:SCREENING-PARSING`,
       actor: 'SYSTEM',
     });
 
-    return { claimId, status: 'SCREENING' };
+    return { claimId, status: 'PARSING', fraudScreenStatus: fraudScreen.status };
   };
 }
