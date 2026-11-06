@@ -1,0 +1,25 @@
+{
+  "name": "@flowclaim/receipt-ai",
+  "version": "1.0.0",
+  "description": "Google Gemini multimodal receipt extraction and deterministic post-decision breach summarizer for FlowClaim",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "receipt-extraction",
+    "multimodal-ai",
+    "gemini",
+    "validation",
+    "flowclaim"
+  ],
+  "author": "Ankush-123-gith-ub <ffp900h@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}
