@@ -1,0 +1,21 @@
+{
+  "name": "@flowclaim/ledger",
+  "version": "1.0.0",
+  "description": "PostgreSQL-backed atomic financial ledger and budget manager for FlowClaim",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "ledger",
+    "postgresql",
+    "financial-transactions",
+    "flowclaim"
+  ],
+  "author": "FlowClaim Team",
+  "license": "ISC"
+}
