@@ -12,10 +12,11 @@
  * @param {import('@flowclaim/shared-types').ReceiptStoragePort} dependencies.storage
  * @param {any} dependencies.fraudEngine
  * @param {any} dependencies.receiptAi
+ * @param {any} [dependencies.policyEngine]
  * @returns {Function} BullMQ processor function
  */
 export function createProcessClaimProcessor(dependencies) {
-  const { claimState, storage, fraudEngine, receiptAi } = dependencies;
+  const { claimState, storage, fraudEngine, receiptAi, policyEngine } = dependencies;
 
   return async function processClaimJob(job) {
     const { claimId } = job.data;
@@ -42,7 +43,6 @@ export function createProcessClaimProcessor(dependencies) {
       });
     }
 
-    // Download receipt bytes from S3
     const receiptObj = await storage.getObject(context.receipt.objectKey);
     const fraudScreen = await fraudEngine.screen({
       claimId,
@@ -50,9 +50,7 @@ export function createProcessClaimProcessor(dependencies) {
       contentType: receiptObj.contentType || context.receipt.contentType,
     });
 
-    await claimState.saveStageResult(claimId, 'fraud', {
-      screen: fraudScreen,
-    });
+    await claimState.saveStageResult(claimId, 'fraud', { screen: fraudScreen });
 
     // 3. Stage 4: Transition SCREENING -> PARSING
     await claimState.transition({
@@ -75,7 +73,6 @@ export function createProcessClaimProcessor(dependencies) {
       if (extractionResult.retryable) {
         throw new Error(`Retryable extraction failure: ${extractionResult.message}`);
       }
-      // Non-retryable failure transitions to NEEDS_REVIEW
       await claimState.transition({
         claimId,
         from: 'PARSING',
@@ -87,7 +84,7 @@ export function createProcessClaimProcessor(dependencies) {
       return { claimId, status: 'NEEDS_REVIEW', reason: 'EXTRACTION_INVALID' };
     }
 
-    // 4. Duplicate Verification (post-extraction)
+    // 4. Duplicate Verification
     const duplicateVerification = await fraudEngine.verify({
       claimId,
       screen: fraudScreen,
@@ -115,6 +112,68 @@ export function createProcessClaimProcessor(dependencies) {
       return { claimId, status: 'POSSIBLE_DUPLICATE', duplicateVerification };
     }
 
-    return { claimId, status: 'PARSING', extraction: extractionResult.data };
+    // 5. Stage 5: Policy Evaluation
+    await claimState.transition({
+      claimId,
+      from: 'PARSING',
+      to: 'POLICY_CHECK',
+      transitionKey: `claim:${claimId}:transition:PARSING-POLICY_CHECK`,
+      actor: 'SYSTEM',
+    });
+
+    let policyResult = {
+      policyId: 'default-active-policy',
+      policyVersion: 1,
+      outcome: 'PASS',
+      executionOrder: [],
+      ruleResults: [],
+      violations: [],
+      evaluatedAt: new Date().toISOString(),
+    };
+
+    if (policyEngine?.evaluatePolicy) {
+      const activePolicy = await claimState.getActivePolicy();
+      policyResult = policyEngine.evaluatePolicy({
+        policy: activePolicy,
+        facts: {
+          claim: {
+            category: context.category,
+            claimedAmountMinor: context.claimedAmountMinor,
+            employeeRole: context.employeeRole,
+            businessPurpose: context.businessPurpose,
+          },
+          receipt: extractionResult.data,
+          now: new Date().toISOString(),
+        },
+      });
+    }
+
+    await claimState.saveStageResult(claimId, 'policy', policyResult);
+
+    if (policyResult.outcome === 'BLOCKED') {
+      await claimState.transition({
+        claimId,
+        from: 'POLICY_CHECK',
+        to: 'REJECTED',
+        transitionKey: `claim:${claimId}:transition:POLICY_CHECK-REJECTED`,
+        reason: `Policy BLOCKED: ${policyResult.violations.map((v) => v.code).join(', ')}`,
+        actor: 'SYSTEM',
+      });
+      return { claimId, status: 'REJECTED', policyResult };
+    }
+
+    if (policyResult.outcome === 'REVIEW_REQUIRED') {
+      await claimState.transition({
+        claimId,
+        from: 'POLICY_CHECK',
+        to: 'NEEDS_REVIEW',
+        transitionKey: `claim:${claimId}:transition:POLICY_CHECK-NEEDS_REVIEW`,
+        reason: `Policy REVIEW_REQUIRED: ${policyResult.violations.map((v) => v.code).join(', ')}`,
+        actor: 'SYSTEM',
+      });
+      return { claimId, status: 'NEEDS_REVIEW', policyResult };
+    }
+
+    return { claimId, status: 'POLICY_CHECK', policyResult };
   };
 }
