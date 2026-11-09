@@ -13,10 +13,11 @@
  * @param {any} dependencies.fraudEngine
  * @param {any} dependencies.receiptAi
  * @param {any} [dependencies.policyEngine]
+ * @param {any} [dependencies.anomalyEngine]
  * @returns {Function} BullMQ processor function
  */
 export function createProcessClaimProcessor(dependencies) {
-  const { claimState, storage, fraudEngine, receiptAi, policyEngine } = dependencies;
+  const { claimState, storage, fraudEngine, receiptAi, policyEngine, anomalyEngine } = dependencies;
 
   return async function processClaimJob(job) {
     const { claimId } = job.data;
@@ -174,6 +175,58 @@ export function createProcessClaimProcessor(dependencies) {
       return { claimId, status: 'NEEDS_REVIEW', policyResult };
     }
 
-    return { claimId, status: 'POLICY_CHECK', policyResult };
+    // 6. Stage 6: Anomaly Check
+    await claimState.transition({
+      claimId,
+      from: 'POLICY_CHECK',
+      to: 'ANOMALY_CHECK',
+      transitionKey: `claim:${claimId}:transition:POLICY_CHECK-ANOMALY_CHECK`,
+      actor: 'SYSTEM',
+    });
+
+    let anomalyResult = {
+      status: 'INSUFFICIENT_HISTORY',
+      score: 0,
+      threshold: 2.5,
+      flagged: false,
+      k: 5,
+      neighbours: [],
+      featureVector: [],
+      explanation: 'Insufficient approved history for category comparison',
+      scoredAt: new Date().toISOString(),
+    };
+
+    if (anomalyEngine?.score) {
+      const history = await claimState.getApprovedExpenses({
+        category: context.category,
+        limit: 100,
+      });
+      anomalyResult = anomalyEngine.score({
+        history,
+        candidate: {
+          employeeId: context.employeeId,
+          category: context.category,
+          amountMinor: context.claimedAmountMinor,
+          transactionDate: extractionResult.data.transactionDate,
+        },
+        now: new Date().toISOString(),
+      });
+    }
+
+    await claimState.saveStageResult(claimId, 'anomaly', anomalyResult);
+
+    if (anomalyResult.flagged) {
+      await claimState.transition({
+        claimId,
+        from: 'ANOMALY_CHECK',
+        to: 'NEEDS_REVIEW',
+        transitionKey: `claim:${claimId}:transition:ANOMALY_CHECK-NEEDS_REVIEW:anomaly-flagged`,
+        reason: `Anomaly flagged: ${anomalyResult.explanation} (score: ${anomalyResult.score})`,
+        actor: 'SYSTEM',
+      });
+      return { claimId, status: 'NEEDS_REVIEW', anomalyResult };
+    }
+
+    return { claimId, status: 'ANOMALY_CHECK', anomalyResult };
   };
 }
