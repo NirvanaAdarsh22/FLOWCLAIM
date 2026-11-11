@@ -1,8 +1,10 @@
 /**
  * @file worker/src/processors/processClaim.js
  * Core processor for the 'process-claim' job.
- * Coordinates multi-stage expense claim processing.
+ * Coordinates multi-stage expense claim processing through Stage 7 (Financial Check).
  */
+
+import { resolveDeterministicDecision } from '../services/decision/decisionResolver.js';
 
 /**
  * Creates the processClaim job processor.
@@ -14,10 +16,19 @@
  * @param {any} dependencies.receiptAi
  * @param {any} [dependencies.policyEngine]
  * @param {any} [dependencies.anomalyEngine]
+ * @param {any} [dependencies.ledger]
  * @returns {Function} BullMQ processor function
  */
 export function createProcessClaimProcessor(dependencies) {
-  const { claimState, storage, fraudEngine, receiptAi, policyEngine, anomalyEngine } = dependencies;
+  const {
+    claimState,
+    storage,
+    fraudEngine,
+    receiptAi,
+    policyEngine,
+    anomalyEngine,
+    ledger,
+  } = dependencies;
 
   return async function processClaimJob(job) {
     const { claimId } = job.data;
@@ -227,6 +238,55 @@ export function createProcessClaimProcessor(dependencies) {
       return { claimId, status: 'NEEDS_REVIEW', anomalyResult };
     }
 
-    return { claimId, status: 'ANOMALY_CHECK', anomalyResult };
+    // 7. Stage 7: Financial Ledger Commit
+    await claimState.transition({
+      claimId,
+      from: 'ANOMALY_CHECK',
+      to: 'FINANCIAL_CHECK',
+      transitionKey: `claim:${claimId}:transition:ANOMALY_CHECK-FINANCIAL_CHECK`,
+      actor: 'SYSTEM',
+    });
+
+    let financialResult = { status: 'COMMITTED', ledgerEntryId: `mock-entry-${claimId}` };
+
+    if (ledger?.commitClaim) {
+      const period = (context.expenseDate || new Date().toISOString()).slice(0, 7);
+      financialResult = await ledger.commitClaim({
+        claimId,
+        employeeId: context.employeeId,
+        amountMinor: context.claimedAmountMinor,
+        currency: 'INR',
+        category: context.category,
+        period,
+        idempotencyKey: `claim:${claimId}:commit`,
+        policyVersion: { policyId: policyResult.policyId, version: policyResult.policyVersion },
+        occurredAt: new Date().toISOString(),
+      });
+    }
+
+    await claimState.saveStageResult(claimId, 'financial', financialResult);
+
+    // Resolve deterministic decision
+    const decision = resolveDeterministicDecision({
+      extraction: extractionResult,
+      verification: duplicateVerification,
+      policy: policyResult,
+      anomaly: anomalyResult,
+      financial: financialResult,
+    });
+
+    await claimState.saveStageResult(claimId, 'decision', decision);
+
+    // Transition to terminal state (APPROVED or REJECTED)
+    await claimState.transition({
+      claimId,
+      from: 'FINANCIAL_CHECK',
+      to: decision.outcome,
+      transitionKey: `claim:${claimId}:transition:FINANCIAL_CHECK-${decision.outcome}`,
+      reason: decision.reasonCodes.join(', '),
+      actor: 'SYSTEM',
+    });
+
+    return { claimId, status: decision.outcome, decision };
   };
 }
