@@ -1,7 +1,7 @@
 /**
  * @file worker/src/processors/processClaim.js
  * Core processor for the 'process-claim' job.
- * Coordinates multi-stage expense claim processing through Stage 7 (Financial Check).
+ * Coordinates multi-stage expense claim processing through Stage 8 (AI Summary).
  */
 
 import { resolveDeterministicDecision } from '../services/decision/decisionResolver.js';
@@ -286,6 +286,21 @@ export function createProcessClaimProcessor(dependencies) {
       reason: decision.reasonCodes.join(', '),
       actor: 'SYSTEM',
     });
+
+    // 8. Stage 8: Post-Decision Breach Explanation (Non-blocking best effort)
+    try {
+      const summary = await receiptAi.summarize({
+        claimId,
+        decision,
+        violations: policyResult?.violations || [],
+        anomaly: anomalyResult,
+      });
+      if (summary) {
+        await claimState.saveStageResult(claimId, 'summary', summary);
+      }
+    } catch {
+      // Best effort: failure never changes the decision
+    }
 
     return { claimId, status: decision.outcome, decision };
   };
