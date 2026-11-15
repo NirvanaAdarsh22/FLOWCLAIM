@@ -4,6 +4,9 @@
   "description": "BullMQ asynchronous background worker service for FlowClaim expense verification",
   "type": "module",
   "main": "src/worker.js",
+  "imports": {
+    "@flowclaim/fraud-engine": "../packages/fraud-engine/src/index.js"
+  },
   "scripts": {
     "start": "node src/worker.js",
     "test": "node --test tests/**/*.test.js"
