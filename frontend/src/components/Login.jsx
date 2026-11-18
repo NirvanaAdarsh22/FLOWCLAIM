@@ -1,10 +1,11 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
 function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -17,50 +18,35 @@ function Login() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        setFormData({
-            ...formData,
+        setFormData((prev) => ({
+            ...prev,
             [name]: value
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
 
-        if (!formData.email || !formData.password) {
+        if (!formData.email.trim() || !formData.password) {
             setError("Please enter email and password.");
             return;
         }
 
         try {
             setLoading(true);
+            const data = await login(formData.email, formData.password);
 
-            const response = await fetch(
-                "http://localhost:5000/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                setError(data.message || "Login failed.");
-                return;
+            const role = data?.user?.role;
+            if (role === "admin") {
+                navigate("/admin");
+            } else if (role === "finance_manager" || role === "finance") {
+                navigate("/finance");
+            } else {
+                navigate("/dashboard");
             }
-
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-
-            navigate("/dashboard");
-
-        } catch (error) {
-            setError("Unable to connect to server.");
+        } catch (err) {
+            setError(err.message || "Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }
@@ -69,7 +55,6 @@ function Login() {
     return (
         <div className="login-container">
             <div className="login-card">
-
                 <h1>FlowClaim</h1>
                 <p className="login-subtitle">
                     Expense Verification Platform
@@ -81,7 +66,6 @@ function Login() {
                 </p>
 
                 <form onSubmit={handleSubmit}>
-
                     <div className="form-group">
                         <label>Email Address</label>
                         <input
@@ -90,12 +74,13 @@ function Login() {
                             placeholder="Enter your email"
                             value={formData.email}
                             onChange={handleChange}
+                            autoComplete="email"
+                            required
                         />
                     </div>
 
                     <div className="form-group">
                         <label>Password</label>
-
                         <div className="password-wrapper">
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -103,8 +88,9 @@ function Login() {
                                 placeholder="Enter your password"
                                 value={formData.password}
                                 onChange={handleChange}
+                                autoComplete="current-password"
+                                required
                             />
-
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
@@ -113,7 +99,7 @@ function Login() {
                             </button>
                         </div>
                     </div>
-                    
+
                     <div className="forgot-password-link">
                         <Link to="/forgot-password">Forgot Password?</Link>
                     </div>
@@ -129,13 +115,11 @@ function Login() {
                     >
                         {loading ? "Signing in..." : "Sign In"}
                     </button>
-
                 </form>
 
                 <p className="register-text">
                     Don't have an account? <Link to="/register">Register</Link>
                 </p>
-
             </div>
         </div>
     );

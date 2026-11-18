@@ -1,10 +1,11 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Register.css";
 
 function Register() {
     const navigate = useNavigate();
+    const { register } = useAuth();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -15,23 +16,24 @@ function Register() {
     });
 
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        setFormData({
-            ...formData,
+        setFormData((prev) => ({
+            ...prev,
             [name]: value
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setSuccess("");
 
-        if (Object.values(formData).some(value => !value.trim())) {
-            setError("Please fill in all fields.");
+        if (!formData.name.trim() || !formData.email.trim() || !formData.password || !formData.employeeId.trim()) {
+            setError("Please fill in all required fields (Name, Email, Employee ID, Password).");
             return;
         }
 
@@ -42,32 +44,15 @@ function Register() {
 
         try {
             setLoading(true);
+            const data = await register(formData);
 
-            const response = await fetch(
-                "http://localhost:5000/api/auth/register",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                }
-            );
+            setSuccess(data.message || "Registration successful! Redirecting to login...");
+            setTimeout(() => {
+                navigate("/");
+            }, 1500);
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                setError(data.message || "Registration failed.");
-                return;
-            }
-
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-
-            navigate("/dashboard");
-
-        } catch (error) {
-            setError("Unable to connect to server.");
+        } catch (err) {
+            setError(err.message || "Registration failed. Please verify your details.");
         } finally {
             setLoading(false);
         }
@@ -90,35 +75,38 @@ function Register() {
                 <form onSubmit={handleSubmit}>
 
                     <div className="register-group">
-                        <label>Full Name</label>
+                        <label>Full Name *</label>
                         <input
                             type="text"
                             name="name"
                             placeholder="Enter your full name"
                             value={formData.name}
                             onChange={handleChange}
+                            required
                         />
                     </div>
 
                     <div className="register-group">
-                        <label>Email Address</label>
+                        <label>Email Address *</label>
                         <input
                             type="email"
                             name="email"
                             placeholder="Enter your email"
                             value={formData.email}
                             onChange={handleChange}
+                            required
                         />
                     </div>
 
                     <div className="register-group">
-                        <label>Employee ID</label>
+                        <label>Employee ID *</label>
                         <input
                             type="text"
                             name="employeeId"
-                            placeholder="Enter employee ID"
+                            placeholder="e.g. EMP-101"
                             value={formData.employeeId}
                             onChange={handleChange}
+                            required
                         />
                     </div>
 
@@ -127,25 +115,32 @@ function Register() {
                         <input
                             type="text"
                             name="department"
-                            placeholder="e.g. Engineering"
+                            placeholder="e.g. Engineering (default: General)"
                             value={formData.department}
                             onChange={handleChange}
                         />
                     </div>
 
                     <div className="register-group">
-                        <label>Password</label>
+                        <label>Password *</label>
                         <input
                             type="password"
                             name="password"
                             placeholder="Minimum 8 characters"
                             value={formData.password}
                             onChange={handleChange}
+                            required
                         />
                     </div>
 
                     {error && (
                         <p className="register-error">{error}</p>
+                    )}
+
+                    {success && (
+                        <p style={{ color: "#16a34a", fontSize: "14px", marginBottom: "14px", fontWeight: "600" }}>
+                            {success}
+                        </p>
                     )}
 
                     <button
