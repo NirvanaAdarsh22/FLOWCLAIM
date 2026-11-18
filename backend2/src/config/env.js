@@ -4,19 +4,19 @@ import { z } from "zod";
 
 dotenv.config();
 
-
 const envSchema = z.object({
     PORT: z.coerce.number().default(5000),
 
     MONGO_URI: z.string().min(1, "MONGO_URI is required"),
-
     DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-
     REDIS_URL: z.string().min(1, "REDIS_URL is required"),
 
     JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+    JWT_EXPIRES_IN: z.string().default("1d"),
 
-    JWT_EXPIRES_IN: z.string().default("1d")
+    EMAIL_USER: z.string().email("Valid EMAIL_USER is required"),
+    EMAIL_PASS: z.string().min(1, "EMAIL_PASS is required"),
+    FRONTEND_URL: z.string().url("Valid FRONTEND_URL is required")
 });
 
 const result = envSchema.safeParse(process.env);

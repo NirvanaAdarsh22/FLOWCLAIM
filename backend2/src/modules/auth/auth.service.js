@@ -1,4 +1,4 @@
-
+import { randomBytes, createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../../config/postgresql.js";
@@ -64,4 +64,61 @@ export const loginUser = async ({ email, password }) => {
     user: safeUser,
     token
   };
+};
+
+export const requestPasswordReset = async (email) => {
+  const result = await pool.query(
+    `SELECT id, full_name, email
+     FROM users
+     WHERE email = $1`,
+    [email.toLowerCase().trim()]
+  );
+
+  const user = result.rows[0];
+
+  // Return the same generic response whether the user exists or not.
+  if (!user) return null;
+
+  // Generate a secure random token.
+  const resetToken = randomBytes(32).toString("hex");
+
+  // Store only the SHA-256 hash in PostgreSQL.
+  const hashedToken = createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await pool.query(
+    `UPDATE users
+     SET reset_password_token = $1,
+         reset_password_expires = $2,
+         updated_at = CURRENT_TIMESTAMP
+     WHERE id = $3`,
+    [hashedToken, expiresAt, user.id]
+  );
+
+  return { user, resetToken };
+};
+
+export const resetUserPassword = async ({ token, password }) => {
+  const hashedToken = createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const result = await pool.query(
+    `UPDATE users
+     SET password_hash = $1,
+         reset_password_token = NULL,
+         reset_password_expires = NULL,
+         updated_at = CURRENT_TIMESTAMP
+     WHERE reset_password_token = $2
+       AND reset_password_expires > CURRENT_TIMESTAMP
+     RETURNING id`,
+    [passwordHash, hashedToken]
+  );
+
+  return result.rowCount > 0;
 };
