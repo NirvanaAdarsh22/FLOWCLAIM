@@ -11,6 +11,9 @@ router.get("/profile", authMiddleware, (req, res) => {
     message: "Access granted! You are authenticated.",
     user: {
       id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      employeeId: req.user.employeeId,
       role: req.user.role
     }
   });
