@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
     BrowserRouter,
@@ -10,6 +9,8 @@ import {
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
+import ResetPassword from "./components/ResetPassword";
+import ForgotPassword from "./components/ForgotPassword";
 
 function ProtectedRoute({ children }) {
     const token = localStorage.getItem("token");
@@ -35,8 +36,9 @@ function App() {
                     }
                 />
 
+                <Route path="/reset-password/:token"element={<ResetPassword />}/>
+                <Route path="/forgot-password"element={<ForgotPassword />}/>
                 <Route path="*" element={<Navigate to="/" replace />} />
-
             </Routes>
         </BrowserRouter>
     );

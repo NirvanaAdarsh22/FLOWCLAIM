@@ -3,6 +3,8 @@ const protectedRoutes = require("./routes/protectedRoutes");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+console.log("EMAIL_USER loaded:", Boolean(process.env.EMAIL_USER));
+console.log("EMAIL_PASS loaded:", Boolean(process.env.EMAIL_PASS));
 
 const connectDB = require("./config/db");
 
