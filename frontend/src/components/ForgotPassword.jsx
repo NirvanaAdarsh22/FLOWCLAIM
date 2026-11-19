@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./ForgotPassword.css";
 
 function ForgotPassword() {
+    const { forgotPassword } = useAuth();
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
@@ -10,7 +12,6 @@ function ForgotPassword() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         setError("");
         setMessage("");
 
@@ -21,26 +22,8 @@ function ForgotPassword() {
 
         try {
             setLoading(true);
-
-            const response = await fetch(
-                "http://localhost:5000/api/auth/forgot-password",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ email })
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Request failed.");
-            }
-
-            setMessage(data.message);
-
+            const data = await forgotPassword(email);
+            setMessage(data?.message || "If an account exists, a reset link will be sent.");
         } catch (err) {
             setError(err.message || "Unable to connect to server.");
         } finally {
@@ -70,6 +53,7 @@ function ForgotPassword() {
                             placeholder="Enter your registered email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            required
                         />
                     </div>
 

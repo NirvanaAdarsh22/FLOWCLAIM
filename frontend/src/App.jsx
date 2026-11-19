@@ -8,9 +8,10 @@ import {
 
 import Login from "./components/Login";
 import Register from "./components/Register";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/dashboard/Dashboard";
 import ResetPassword from "./components/ResetPassword";
 import ForgotPassword from "./components/ForgotPassword";
+import { AuthProvider } from "./context/AuthContext";
 
 function ProtectedRoute({ children }) {
     const token = localStorage.getItem("token");
@@ -20,7 +21,8 @@ function ProtectedRoute({ children }) {
 
 function App() {
     return (
-        <BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
             <Routes>
 
                 <Route path="/" element={<Login />} />
@@ -41,6 +43,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
+    </AuthProvider>
     );
 }
 
