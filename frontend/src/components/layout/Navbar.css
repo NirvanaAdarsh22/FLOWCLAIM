@@ -1,0 +1,310 @@
+/* Navbar Component - Light Cream Executive Styling */
+
+.fc-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: rgba(250, 247, 242, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--fc-border);
+  box-shadow: 0 1px 3px rgba(44, 38, 27, 0.03);
+}
+
+.fc-navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Brand Section */
+.fc-navbar-brand-section {
+  display: flex;
+  align-items: center;
+}
+
+.fc-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--fc-text-primary);
+}
+
+.fc-brand-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--fc-radius-md);
+  background-color: var(--fc-brand-primary);
+  color: #FDFBF7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(28, 25, 23, 0.2);
+  transition: transform var(--fc-transition-fast);
+}
+
+.fc-brand-link:hover .fc-brand-icon-box {
+  transform: scale(1.04);
+}
+
+.fc-brand-sparkle {
+  color: #F59E0B;
+}
+
+.fc-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--fc-text-primary);
+  line-height: 1.1;
+}
+
+.fc-brand-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--fc-text-muted);
+  text-transform: uppercase;
+}
+
+/* Navigation Links */
+.fc-navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--fc-bg-subtle);
+  padding: 4px;
+  border-radius: var(--fc-radius-lg);
+  border: 1px solid var(--fc-border);
+}
+
+.fc-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--fc-text-secondary);
+  text-decoration: none;
+  border-radius: var(--fc-radius-md);
+  transition: all var(--fc-transition-fast);
+}
+
+.fc-nav-item:hover {
+  color: var(--fc-text-primary);
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.fc-nav-item.active {
+  color: var(--fc-text-primary);
+  background-color: var(--fc-surface);
+  box-shadow: 0 1px 3px rgba(44, 38, 27, 0.07);
+  font-weight: 600;
+}
+
+/* Actions Section */
+.fc-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Role Picker */
+.fc-role-picker-wrapper {
+  position: relative;
+}
+
+.fc-role-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-full);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fc-text-secondary);
+  cursor: pointer;
+  box-shadow: var(--fc-shadow-xs);
+  transition: all var(--fc-transition-fast);
+}
+
+.fc-role-picker-btn:hover {
+  border-color: var(--fc-border-hover);
+  background-color: var(--fc-surface-hover);
+}
+
+.fc-role-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--fc-accent-warm);
+}
+
+.fc-role-arrow {
+  color: var(--fc-text-muted);
+  transition: transform var(--fc-transition-fast);
+}
+
+.fc-role-arrow.open {
+  transform: rotate(180deg);
+}
+
+.fc-role-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+.fc-role-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 270px;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-lg);
+  box-shadow: var(--fc-shadow-lg);
+  padding: 8px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fcFadeIn 0.15s ease-out;
+}
+
+@keyframes fcFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fc-role-dropdown-header {
+  padding: 6px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--fc-text-muted);
+  border-bottom: 1px solid var(--fc-border);
+  margin-bottom: 4px;
+}
+
+.fc-role-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: var(--fc-radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--fc-transition-fast);
+  width: 100%;
+}
+
+.fc-role-option:hover {
+  background-color: var(--fc-bg-subtle);
+}
+
+.fc-role-option.selected {
+  background-color: var(--fc-accent-warm-light);
+}
+
+.fc-role-option-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fc-text-primary);
+}
+
+.fc-role-option-desc {
+  font-size: 11px;
+  color: var(--fc-text-muted);
+  margin-top: 2px;
+}
+
+.fc-role-active-check {
+  font-weight: bold;
+  color: var(--fc-accent-warm);
+}
+
+/* User Pill & Logout */
+.fc-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 4px 10px;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-full);
+  box-shadow: var(--fc-shadow-xs);
+}
+
+.fc-user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--fc-bg-subtle);
+  border: 1px solid var(--fc-border);
+  color: var(--fc-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-user-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fc-text-primary);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-logout-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--fc-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--fc-transition-fast);
+}
+
+.fc-logout-btn:hover {
+  background-color: var(--fc-status-danger-bg);
+  color: var(--fc-status-danger-text);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .fc-navbar-container {
+    padding: 0 16px;
+  }
+  .fc-brand-subtitle,
+  .fc-user-meta {
+    display: none;
+  }
+}
