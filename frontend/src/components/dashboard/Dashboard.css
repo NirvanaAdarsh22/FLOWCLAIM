@@ -1,65 +1,338 @@
+/* FlowClaim Dashboard - Light Cream Palette */
 
-.dashboard-container {
-    min-height: 100vh;
-    background: #f1f5f9;
-    font-family: Arial, sans-serif;
+.fc-dashboard-page {
+  min-height: 100vh;
+  background-color: var(--fc-bg-base);
+  display: flex;
+  flex-direction: column;
 }
 
-.dashboard-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 40px;
-    background: #101828;
-    color: white;
+.fc-dashboard-main {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.dashboard-navbar h2 {
-    color: #60a5fa;
+/* Hero Section */
+.fc-dashboard-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.dashboard-navbar button {
-    padding: 10px 20px;
-    background: #dc2626;
-    color: white;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
+.fc-hero-text {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.dashboard-navbar button:hover {
-    background: #b91c1c;
+.fc-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background-color: var(--fc-bg-subtle);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-full);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fc-accent-warm);
+  width: fit-content;
 }
 
-.dashboard-content {
-    max-width: 1000px;
-    margin: 50px auto;
-    padding: 20px;
+.fc-hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--fc-accent-gold);
 }
 
-.dashboard-content h1 {
-    color: #1e293b;
-    margin-bottom: 10px;
+.fc-hero-text h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--fc-text-primary);
+  letter-spacing: -0.03em;
 }
 
-.dashboard-subtitle {
-    color: #64748b;
-    margin-bottom: 30px;
+.fc-hero-text p {
+  font-size: 14.5px;
+  color: var(--fc-text-secondary);
+  line-height: 1.5;
 }
 
-.dashboard-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+.fc-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.dashboard-card h3 {
-    color: #2563eb;
-    margin-bottom: 20px;
+.fc-btn-lg {
+  padding: 10px 20px;
+  font-size: 14.5px;
+  font-weight: 600;
 }
 
-.dashboard-card p {
-    color: #334155;
-    margin-bottom: 15px;
+.fc-btn-sm {
+  padding: 6px 11px;
+  font-size: 12.5px;
+}
+
+.fc-btn-xs {
+  padding: 4px 8px;
+  font-size: 11.5px;
+}
+
+.fc-btn-success {
+  background-color: var(--fc-status-success-bg);
+  color: var(--fc-status-success-text);
+  border-color: var(--fc-status-success-border);
+}
+
+.fc-btn-success:hover {
+  background-color: #DCFCE7;
+}
+
+/* Action Notice */
+.fc-action-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: var(--fc-accent-warm-light);
+  border: 1px solid var(--fc-border-hover);
+  border-radius: var(--fc-radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--fc-accent-warm);
+  animation: fcFadeIn 0.2s ease-out;
+}
+
+/* KPI Row */
+.fc-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.fc-kpi-card {
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--fc-shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform var(--fc-transition-fast), box-shadow var(--fc-transition-fast);
+}
+
+.fc-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--fc-shadow-sm);
+  border-color: var(--fc-border-hover);
+}
+
+.fc-kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fc-kpi-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.fc-kpi-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--fc-radius-md);
+  background-color: var(--fc-bg-subtle);
+  border: 1px solid var(--fc-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fc-text-secondary);
+}
+
+.fc-icon-success {
+  background-color: var(--fc-status-success-bg);
+  color: var(--fc-status-success-text);
+  border-color: var(--fc-status-success-border);
+}
+
+.fc-icon-warning {
+  background-color: var(--fc-status-warning-bg);
+  color: var(--fc-status-warning-text);
+  border-color: var(--fc-status-warning-border);
+}
+
+.fc-icon-ai {
+  background-color: var(--fc-status-ai-bg);
+  color: var(--fc-status-ai-text);
+  border-color: var(--fc-status-ai-border);
+}
+
+.fc-kpi-figure {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fc-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.fc-kpi-meta {
+  font-size: 12px;
+  color: var(--fc-text-muted);
+}
+
+.fc-text-success {
+  color: var(--fc-status-success-text);
+  font-weight: 600;
+}
+
+/* Claims Section */
+.fc-claims-section {
+  overflow: hidden;
+}
+
+.fc-toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background-color: var(--fc-bg-subtle);
+  border-bottom: 1px solid var(--fc-border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fc-toolbar-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.fc-toolbar-tab {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fc-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--fc-radius-md);
+  cursor: pointer;
+  transition: all var(--fc-transition-fast);
+}
+
+.fc-toolbar-tab:hover {
+  background-color: var(--fc-surface);
+}
+
+.fc-toolbar-tab.active {
+  background-color: var(--fc-surface);
+  color: var(--fc-text-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(44, 38, 27, 0.05);
+}
+
+.fc-toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fc-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-md);
+  padding: 6px 12px;
+  width: 240px;
+}
+
+.fc-search-icon {
+  color: var(--fc-text-muted);
+}
+
+.fc-search-input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--fc-text-primary);
+  width: 100%;
+  background: transparent;
+}
+
+.fc-filter-select {
+  padding: 6px 12px;
+  font-size: 13px;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-md);
+  color: var(--fc-text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+/* Claims Table Specifics */
+.fc-claim-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fc-claim-title {
+  font-weight: 600;
+  color: var(--fc-text-primary);
+}
+
+.fc-claim-sub {
+  font-size: 12px;
+  color: var(--fc-text-muted);
+}
+
+.fc-claim-flag-note {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fc-status-warning-text);
+  margin-top: 2px;
+}
+
+.fc-amount-text {
+  font-weight: 700;
+  color: var(--fc-text-primary);
+}
+
+.fc-stage-pill {
+  font-size: 11.5px;
+  color: var(--fc-text-secondary);
+  background-color: var(--fc-bg-subtle);
+  padding: 3px 8px;
+  border-radius: var(--fc-radius-sm);
+  border: 1px solid var(--fc-border);
+  white-space: nowrap;
+}
+
+.fc-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.fc-empty-state {
+  text-align: center;
+  padding: 40px !important;
+  color: var(--fc-text-muted);
 }
