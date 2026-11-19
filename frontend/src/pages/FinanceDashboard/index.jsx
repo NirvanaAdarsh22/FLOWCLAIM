@@ -2,11 +2,23 @@
  * @file frontend/src/pages/FinanceDashboard/index.jsx
  * Finance Administrator Dashboard.
  * Exports FinanceRoutes as a named export per the Master Integration Contract §2.5.
- * Plain React JSX.
+ * Plain React JSX styled with the FlowClaim Light Cream design system.
  */
 
 import React, { useState, useEffect } from 'react';
+import Navbar from '../../components/layout/Navbar.jsx';
 import { financeApi } from '../../services/financeApi.js';
+import {
+  Landmark,
+  PlusCircle,
+  FileSpreadsheet,
+  History,
+  ShieldCheck,
+  TrendingDown,
+  TrendingUp,
+  AlertCircle,
+  DollarSign
+} from 'lucide-react';
 
 /**
  * Format integer paise into INR currency display.
@@ -83,186 +95,302 @@ export function FinanceDashboard() {
     }
   }
 
+  // Summary figures
+  const totalBudgetMinor = budgets.reduce((acc, b) => acc + (b.limitMinor || 0), 0);
+  const totalSpentMinor = budgets.reduce((acc, b) => acc + (b.spentMinor || 0), 0);
+  const remainingMinor = totalBudgetMinor - totalSpentMinor;
+
   return (
-    <div className="finance-dashboard-container" style={{ padding: '24px', fontFamily: 'sans-serif' }}>
-      <header style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
-          Finance Administration Dashboard
-        </h1>
-        <p style={{ color: '#6b7280', margin: 0 }}>
-          Manage departmental budgets, inspect atomic PostgreSQL ledger entries, and audit transactions.
-        </p>
-      </header>
+    <div className="fc-dashboard-page">
+      <Navbar />
 
-      {error && (
-        <div style={{ padding: '12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '6px', marginBottom: '16px' }}>
-          {error}
+      <main className="fc-dashboard-main">
+        {/* Header */}
+        <header style={{ marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span className="fc-badge fc-badge-neutral">
+              <Landmark size={12} />
+              TREASURY & POSTGRESQL LEDGER
+            </span>
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+            Finance Administration Dashboard
+          </h1>
+          <p style={{ color: 'var(--fc-text-secondary)', margin: 0, fontSize: '14.5px' }}>
+            Manage departmental budgets, inspect atomic PostgreSQL ledger entries, and audit transactions.
+          </p>
+        </header>
+
+        {error && (
+          <div style={{
+            padding: '12px 16px',
+            backgroundColor: 'var(--fc-status-danger-bg)',
+            color: 'var(--fc-status-danger-text)',
+            borderRadius: 'var(--fc-radius-md)',
+            border: '1px solid var(--fc-status-danger-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <AlertCircle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Executive KPI Summary */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          <div className="fc-kpi-card">
+            <span className="fc-kpi-title">Total Allocated Budget</span>
+            <div className="fc-kpi-figure">{formatINR(totalBudgetMinor)}</div>
+            <span className="fc-kpi-meta">Across {budgets.length} employee budgets</span>
+          </div>
+
+          <div className="fc-kpi-card">
+            <span className="fc-kpi-title">Committed Expenditure</span>
+            <div className="fc-kpi-figure" style={{ color: 'var(--fc-status-danger-text)' }}>
+              {formatINR(totalSpentMinor)}
+            </div>
+            <span className="fc-kpi-meta">Debited via atomic row locks</span>
+          </div>
+
+          <div className="fc-kpi-card">
+            <span className="fc-kpi-title">Available Pool</span>
+            <div className="fc-kpi-figure" style={{ color: 'var(--fc-status-success-text)' }}>
+              {formatINR(remainingMinor)}
+            </div>
+            <span className="fc-kpi-meta">Remaining uncommitted credit</span>
+          </div>
         </div>
-      )}
 
-      {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e5e7eb', marginBottom: '20px' }}>
-        {['budgets', 'ledger', 'audit'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '8px 16px',
-              border: 'none',
-              borderBottom: activeTab === tab ? '2px solid #2563eb' : '2px solid transparent',
-              background: 'none',
-              fontWeight: activeTab === tab ? '600' : 'normal',
-              color: activeTab === tab ? '#2563eb' : '#4b5563',
-              cursor: 'pointer',
-              textTransform: 'capitalize',
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+        {/* Content Card with Navigation Tabs */}
+        <div className="fc-card" style={{ padding: '20px' }}>
+          {/* Navigation Tabs */}
+          <div className="fc-tab-bar">
+            {['budgets', 'ledger', 'audit'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`fc-tab-btn ${activeTab === tab ? 'active' : ''}`}
+              >
+                {tab === 'budgets' ? 'Budgets' : tab === 'ledger' ? 'Ledger' : 'Audit'}
+              </button>
+            ))}
+          </div>
 
-      {loading && <div style={{ color: '#6b7280', padding: '16px 0' }}>Loading data...</div>}
-
-      {/* Budgets Tab */}
-      {!loading && activeTab === 'budgets' && (
-        <div>
-          <form onSubmit={handleCreateBudget} style={{ background: '#f9fafb', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Employee ID</label>
-              <input
-                type="text"
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                placeholder="emp-101"
-                required
-                style={{ padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-              />
+          {loading && (
+            <div style={{ color: 'var(--fc-text-muted)', padding: '24px', textAlign: 'center' }}>
+              Loading ledger data...
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Period (YYYY-MM)</label>
-              <input
-                type="text"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-                required
-                style={{ padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Budget Limit (₹)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={limitRupees}
-                onChange={(e) => setLimitRupees(e.target.value)}
-                placeholder="10000"
-                required
-                style={{ padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={savingBudget}
-              style={{ padding: '8px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
-            >
-              {savingBudget ? 'Saving...' : 'Set Budget'}
-            </button>
-          </form>
+          )}
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ background: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
-                <th style={{ padding: '12px' }}>Budget ID</th>
-                <th style={{ padding: '12px' }}>Employee</th>
-                <th style={{ padding: '12px' }}>Period</th>
-                <th style={{ padding: '12px' }}>Limit</th>
-                <th style={{ padding: '12px' }}>Spent</th>
-                <th style={{ padding: '12px' }}>Remaining</th>
-              </tr>
-            </thead>
-            <tbody>
-              {budgets.length === 0 ? (
-                <tr><td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: '#9ca3af' }}>No budgets found.</td></tr>
-              ) : (
-                budgets.map((b) => (
-                  <tr key={b.budgetId} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '12px', fontFamily: 'monospace' }}>{b.budgetId}</td>
-                    <td style={{ padding: '12px' }}>{b.employeeName || b.employeeId}</td>
-                    <td style={{ padding: '12px' }}>{b.period}</td>
-                    <td style={{ padding: '12px', fontWeight: '500' }}>{formatINR(b.limitMinor)}</td>
-                    <td style={{ padding: '12px', color: '#dc2626' }}>{formatINR(b.spentMinor)}</td>
-                    <td style={{ padding: '12px', color: '#16a34a', fontWeight: 'bold' }}>{formatINR(b.limitMinor - b.spentMinor)}</td>
+          {/* Budgets Tab */}
+          {!loading && activeTab === 'budgets' && (
+            <div>
+              {/* Form to Upsert Budget */}
+              <form
+                onSubmit={handleCreateBudget}
+                style={{
+                  backgroundColor: 'var(--fc-bg-subtle)',
+                  padding: '18px',
+                  borderRadius: 'var(--fc-radius-md)',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'flex-end',
+                  flexWrap: 'wrap',
+                  border: '1px solid var(--fc-border)',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <label className="fc-input-label" style={{ display: 'block', marginBottom: '6px' }}>
+                    Employee ID
+                  </label>
+                  <input
+                    type="text"
+                    value={employeeId}
+                    onChange={(e) => setEmployeeId(e.target.value)}
+                    placeholder="emp-101"
+                    className="fc-input"
+                    required
+                  />
+                </div>
+
+                <div style={{ flex: 1, minWidth: '160px' }}>
+                  <label className="fc-input-label" style={{ display: 'block', marginBottom: '6px' }}>
+                    Fiscal Period
+                  </label>
+                  <input
+                    type="month"
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value)}
+                    className="fc-input"
+                    required
+                  />
+                </div>
+
+                <div style={{ flex: 1, minWidth: '160px' }}>
+                  <label className="fc-input-label" style={{ display: 'block', marginBottom: '6px' }}>
+                    Budget Limit (INR ₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={limitRupees}
+                    onChange={(e) => setLimitRupees(e.target.value)}
+                    placeholder="10000"
+                    className="fc-input"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={savingBudget}
+                  className="fc-btn fc-btn-primary"
+                  style={{ height: '40px' }}
+                >
+                  <PlusCircle size={15} />
+                  <span>{savingBudget ? 'Saving...' : 'Set Budget'}</span>
+                </button>
+              </form>
+
+              {/* Budgets Table */}
+              <div className="fc-table-container">
+                <table className="fc-table">
+                  <thead>
+                    <tr>
+                      <th>Budget ID</th>
+                      <th>Employee</th>
+                      <th>Period</th>
+                      <th>Limit</th>
+                      <th>Spent</th>
+                      <th>Remaining</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {budgets.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--fc-text-muted)' }}>
+                          No budgets found.
+                        </td>
+                      </tr>
+                    ) : (
+                      budgets.map((b) => (
+                        <tr key={b.budgetId}>
+                          <td>
+                            <span className="fc-mono">{b.budgetId}</span>
+                          </td>
+                          <td>
+                            <strong>{b.employeeName || b.employeeId}</strong>
+                          </td>
+                          <td>{b.period}</td>
+                          <td style={{ fontWeight: '600' }}>{formatINR(b.limitMinor)}</td>
+                          <td style={{ color: 'var(--fc-status-danger-text)', fontWeight: '600' }}>
+                            {formatINR(b.spentMinor)}
+                          </td>
+                          <td style={{ color: 'var(--fc-status-success-text)', fontWeight: '700' }}>
+                            {formatINR(b.limitMinor - b.spentMinor)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Ledger Tab */}
+          {!loading && activeTab === 'ledger' && (
+            <div className="fc-table-container">
+              <table className="fc-table">
+                <thead>
+                  <tr>
+                    <th>Entry ID</th>
+                    <th>Claim ID</th>
+                    <th>Employee</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Timestamp</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {ledgerEntries.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--fc-text-muted)' }}>
+                        No ledger entries committed yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    ledgerEntries.map((l) => (
+                      <tr key={l.entryId}>
+                        <td>
+                          <span className="fc-mono">{l.entryId}</span>
+                        </td>
+                        <td>
+                          <span className="fc-mono">{l.claimId}</span>
+                        </td>
+                        <td>{l.employeeId}</td>
+                        <td>
+                          <span className="fc-badge fc-badge-neutral">{l.category}</span>
+                        </td>
+                        <td style={{ fontWeight: '700' }}>{formatINR(l.amountMinor)}</td>
+                        <td style={{ color: 'var(--fc-text-muted)', fontSize: '13px' }}>
+                          {new Date(l.createdAt).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Audit Tab */}
+          {!loading && activeTab === 'audit' && (
+            <div className="fc-table-container">
+              <table className="fc-table">
+                <thead>
+                  <tr>
+                    <th>Audit ID</th>
+                    <th>Claim ID</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditEvents.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: 'var(--fc-text-muted)' }}>
+                        No audit events recorded.
+                      </td>
+                    </tr>
+                  ) : (
+                    auditEvents.map((a) => (
+                      <tr key={a.id}>
+                        <td>
+                          <span className="fc-mono">{a.id}</span>
+                        </td>
+                        <td>
+                          <span className="fc-mono">{a.claimId || '-'}</span>
+                        </td>
+                        <td>{a.actor}</td>
+                        <td>
+                          <span className="fc-badge fc-badge-info">{a.action}</span>
+                        </td>
+                        <td style={{ color: 'var(--fc-text-muted)', fontSize: '13px' }}>
+                          {new Date(a.at).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Ledger Tab */}
-      {!loading && activeTab === 'ledger' && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
-              <th style={{ padding: '12px' }}>Entry ID</th>
-              <th style={{ padding: '12px' }}>Claim ID</th>
-              <th style={{ padding: '12px' }}>Employee</th>
-              <th style={{ padding: '12px' }}>Category</th>
-              <th style={{ padding: '12px' }}>Amount</th>
-              <th style={{ padding: '12px' }}>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ledgerEntries.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: '#9ca3af' }}>No ledger entries committed yet.</td></tr>
-            ) : (
-              ledgerEntries.map((l) => (
-                <tr key={l.entryId} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={{ padding: '12px', fontFamily: 'monospace' }}>{l.entryId}</td>
-                  <td style={{ padding: '12px', fontFamily: 'monospace' }}>{l.claimId}</td>
-                  <td style={{ padding: '12px' }}>{l.employeeId}</td>
-                  <td style={{ padding: '12px' }}>{l.category}</td>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>{formatINR(l.amountMinor)}</td>
-                  <td style={{ padding: '12px', color: '#6b7280' }}>{new Date(l.createdAt).toLocaleString()}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      )}
-
-      {/* Audit Tab */}
-      {!loading && activeTab === 'audit' && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
-              <th style={{ padding: '12px' }}>Audit ID</th>
-              <th style={{ padding: '12px' }}>Claim ID</th>
-              <th style={{ padding: '12px' }}>Actor</th>
-              <th style={{ padding: '12px' }}>Action</th>
-              <th style={{ padding: '12px' }}>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {auditEvents.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '16px', textAlign: 'center', color: '#9ca3af' }}>No audit events recorded.</td></tr>
-            ) : (
-              auditEvents.map((a) => (
-                <tr key={a.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={{ padding: '12px', fontFamily: 'monospace' }}>{a.id}</td>
-                  <td style={{ padding: '12px', fontFamily: 'monospace' }}>{a.claimId || '-'}</td>
-                  <td style={{ padding: '12px' }}>{a.actor}</td>
-                  <td style={{ padding: '12px', fontWeight: '500' }}>{a.action}</td>
-                  <td style={{ padding: '12px', color: '#6b7280' }}>{new Date(a.at).toLocaleString()}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      )}
+      </main>
     </div>
   );
 }
