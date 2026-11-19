@@ -1,170 +1,175 @@
+/* Auth Pages - Light Cream Professional Palette */
 
-.login-container {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 30px 20px;
-    background:
-        radial-gradient(circle at 15% 15%, #555d68 0%, transparent 35%),
-        linear-gradient(135deg, #171a20, #303640, #171a20);
-    font-family: "Segoe UI", Arial, sans-serif;
+.fc-auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background-color: var(--fc-bg-base);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(244, 239, 230, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(244, 239, 230, 0.8) 0%, transparent 40%);
 }
 
-.login-card {
-    width: 100%;
-    max-width: 440px;
-    padding: 45px 42px;
-    background: linear-gradient(145deg, #fdfdfd, #e9ebee);
-    border: 1px solid #c5c9ce;
-    border-radius: 18px;
-    box-shadow:
-        0 25px 65px rgba(0, 0, 0, 0.38),
-        inset 0 1px 0 #ffffff;
+.fc-auth-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-xl);
+  padding: 40px 36px;
+  box-shadow: var(--fc-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fcSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.login-card h1 {
-    text-align: center;
-    color: #303944;
-    font-size: 36px;
-    letter-spacing: -1.5px;
-    margin-bottom: 8px;
+.fc-auth-header {
+  text-align: center;
 }
 
-.login-subtitle {
-    text-align: center;
-    color: #777f89;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    margin-bottom: 38px;
+.fc-auth-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--fc-text-primary);
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
 }
 
-.login-card h2 {
-    color: #252c35;
-    font-size: 25px;
-    margin-bottom: 9px;
+.fc-auth-header p {
+  font-size: 13px;
+  color: var(--fc-text-muted);
 }
 
-.login-description {
-    color: #777f89;
-    font-size: 14px;
-    margin-bottom: 28px;
+/* Quick Demo Box */
+.fc-quick-demo-box {
+  background-color: var(--fc-bg-subtle);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.form-group {
-    margin-bottom: 22px;
+.fc-quick-demo-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--fc-accent-warm);
 }
 
-.form-group label {
-    display: block;
-    color: #424b56;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 9px;
+.fc-quick-demo-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 14px 15px;
-    background: #f7f8fa;
-    color: #252c35;
-    border: 1px solid #c6cbd1;
-    border-radius: 9px;
-    font-size: 14px;
-    outline: none;
-    transition: 0.25s;
+.fc-demo-pill {
+  padding: 5px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-sm);
+  color: var(--fc-text-secondary);
+  cursor: pointer;
+  transition: all var(--fc-transition-fast);
+  text-align: center;
 }
 
-.form-group input::placeholder {
-    color: #a0a6ae;
+.fc-demo-pill:hover {
+  background-color: var(--fc-accent-warm-light);
+  border-color: var(--fc-accent-warm);
+  color: var(--fc-accent-warm);
 }
 
-.form-group input:focus {
-    background: #ffffff;
-    border-color: #8b7750;
-    box-shadow: 0 0 0 3px rgba(139, 119, 80, 0.13);
+/* Auth Form */
+.fc-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.password-wrapper {
-    display: flex;
-    align-items: center;
-    border: 1px solid #c6cbd1;
-    background: #f7f8fa;
-    border-radius: 9px;
-    overflow: hidden;
+.fc-auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.password-wrapper:focus-within {
-    border-color: #8b7750;
-    box-shadow: 0 0 0 3px rgba(139, 119, 80, 0.13);
+.fc-auth-input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--fc-text-muted);
+  pointer-events: none;
 }
 
-.password-wrapper input {
-    flex: 1;
-    min-width: 0;
-    border: none;
-    background: transparent;
-    box-shadow: none;
+.fc-auth-input {
+  padding-left: 38px !important;
+  padding-right: 38px !important;
 }
 
-.password-wrapper input:focus {
-    box-shadow: none;
+.fc-auth-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--fc-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
 }
 
-.password-wrapper button {
-    padding: 12px;
-    border: none;
-    background: transparent;
-    color: #88744e;
-    font-weight: 600;
-    cursor: pointer;
+.fc-auth-eye-btn:hover {
+  color: var(--fc-text-primary);
 }
 
-.login-button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 5px;
-    background: linear-gradient(135deg, #444c57, #252c35);
-    color: #ffffff;
-    border: 1px solid #515b67;
-    border-radius: 9px;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    cursor: pointer;
-    transition: 0.25s;
+.fc-auth-forgot-link {
+  font-size: 12px;
+  color: var(--fc-accent-warm);
+  font-weight: 500;
 }
 
-.login-button:hover {
-    background: linear-gradient(135deg, #88744e, #655638);
-    transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(101, 86, 56, 0.22);
+.fc-auth-submit-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-top: 6px;
 }
 
-.login-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.fc-auth-error {
+  padding: 10px 14px;
+  background-color: var(--fc-status-danger-bg);
+  color: var(--fc-status-danger-text);
+  border: 1px solid var(--fc-status-danger-border);
+  border-radius: var(--fc-radius-md);
+  font-size: 13px;
 }
 
-.login-error {
-    color: #b42318;
-    font-size: 13px;
-    margin-bottom: 15px;
+.fc-auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fc-text-secondary);
+  padding-top: 10px;
+  border-top: 1px solid var(--fc-border);
 }
 
-.register-text {
-    text-align: center;
-    margin-top: 27px;
-    color: #737c86;
-    font-size: 14px;
+.fc-auth-link {
+  font-weight: 600;
+  color: var(--fc-text-primary);
 }
 
-.register-text a {
-    color: #88744e;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.register-text a:hover {
-    text-decoration: underline;
+.fc-auth-link:hover {
+  color: var(--fc-accent-warm);
 }
