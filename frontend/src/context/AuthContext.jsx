@@ -19,8 +19,8 @@ const DEFAULT_DEMO_USER = {
 };
 
 export function AuthProvider({ children }) {
-  const [token, setTokenState] = useState(() => tokenStorage.get() || 'demo-jwt-token-flowclaim');
-  const [user, setUserState] = useState(() => userStorage.get() || DEFAULT_DEMO_USER);
+  const [token, setTokenState] = useState(() => tokenStorage.get() || null);
+  const [user, setUserState] = useState(() => userStorage.get() || null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -31,30 +31,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (userDataOrEmail, tokenOrPassword) => {
-    // If called with (email, password)
+    // If called with (email, password) - authenticates with backend API
     if (typeof userDataOrEmail === 'string' && typeof tokenOrPassword === 'string') {
-      try {
-        const data = await authApi.login({ email: userDataOrEmail, password: tokenOrPassword });
-        setTokenState(data.token);
-        setUserState(userStorage.get());
-        return data;
-      } catch (err) {
-        // Fallback for offline preview if server unreachable
-        const fallbackUser = {
-          id: 'usr-101',
-          name: userDataOrEmail.split('@')[0] || 'Authorized User',
-          email: userDataOrEmail,
-          role: 'EMPLOYEE',
-        };
-        tokenStorage.set('mock-jwt-token-flowclaim');
-        userStorage.set(fallbackUser);
-        setTokenState('mock-jwt-token-flowclaim');
-        setUserState(fallbackUser);
-        return { user: fallbackUser, token: 'mock-jwt-token-flowclaim' };
-      }
+      const data = await authApi.login({ email: userDataOrEmail, password: tokenOrPassword });
+      setTokenState(data.token);
+      setUserState(userStorage.get());
+      return data;
     }
 
-    // If called with (userObject, tokenString)
+    // If called with (userObject, tokenString) - e.g. quick demo persona switcher
     const userData = userDataOrEmail;
     const tokenVal = tokenOrPassword;
     tokenStorage.set(tokenVal);
@@ -65,39 +50,15 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (formData) => {
-    try {
-      return await authApi.register(formData);
-    } catch (err) {
-      const fallbackUser = {
-        id: `usr-${Math.floor(100 + Math.random() * 900)}`,
-        name: formData.name,
-        email: formData.email,
-        role: 'EMPLOYEE',
-        employeeId: formData.employeeId,
-        department: formData.department,
-      };
-      tokenStorage.set('jwt-new-user-token');
-      userStorage.set(fallbackUser);
-      setTokenState('jwt-new-user-token');
-      setUserState(fallbackUser);
-      return { user: fallbackUser, token: 'jwt-new-user-token' };
-    }
+    return await authApi.register(formData);
   };
 
   const forgotPassword = async (email) => {
-    try {
-      return await authApi.forgotPassword(email);
-    } catch {
-      return { message: 'Reset email dispatched.' };
-    }
+    return await authApi.forgotPassword(email);
   };
 
   const resetPassword = async (resetToken, newPassword) => {
-    try {
-      return await authApi.resetPassword(resetToken, newPassword);
-    } catch {
-      return { message: 'Password reset successful.' };
-    }
+    return await authApi.resetPassword(resetToken, newPassword);
   };
 
   const logout = () => {

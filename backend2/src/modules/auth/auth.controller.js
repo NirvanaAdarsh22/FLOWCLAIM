@@ -113,6 +113,7 @@ export const forgotPassword = async (req, res) => {
     const message = "If an account exists, a reset link will be sent.";
 
     if (!result) {
+      console.log(`[AUTH] Forgot password request for '${validation.data.email}': account not found in database.`);
       return res.status(200).json({
         success: true,
         message
@@ -122,7 +123,7 @@ export const forgotPassword = async (req, res) => {
     const resetLink =
       `${env.FRONTEND_URL}/reset-password/${result.resetToken}`;
 
-    await transporter.sendMail({
+    const mailInfo = await transporter.sendMail({
       from: `"FlowClaim" <${env.EMAIL_USER}>`,
       to: result.user.email,
       subject: "FlowClaim Password Reset",
@@ -137,6 +138,8 @@ This link expires in 15 minutes.
 
 If you did not request this, please ignore this email.`
     });
+
+    console.log(`[AUTH] Password reset email successfully dispatched to ${result.user.email}. Message ID: ${mailInfo.messageId}, Accepted: ${JSON.stringify(mailInfo.accepted)}`);
 
     return res.status(200).json({
       success: true,
