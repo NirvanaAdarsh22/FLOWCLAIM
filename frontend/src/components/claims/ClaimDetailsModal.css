@@ -1,0 +1,179 @@
+/* Claim Details Modal - Light Cream Styling */
+
+.fc-details-card {
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-details-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fc-details-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fc-details-sub {
+  font-size: 13px;
+  color: var(--fc-text-muted);
+}
+
+.fc-details-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* KPI Grid */
+.fc-details-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.fc-kpi-box {
+  background-color: var(--fc-bg-base);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fc-kpi-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fc-text-muted);
+}
+
+.fc-kpi-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fc-text-primary);
+}
+
+/* Pipeline Section */
+.fc-pipeline-section {
+  background-color: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-lg);
+  padding: 20px;
+  box-shadow: var(--fc-shadow-xs);
+}
+
+.fc-pipeline-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fc-text-primary);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--fc-border);
+}
+
+.fc-pipeline-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fc-timeline-step {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+
+.fc-step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fc-step-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-color: var(--fc-surface);
+  z-index: 2;
+}
+
+.fc-step-icon.done {
+  color: var(--fc-status-success-text);
+}
+
+.fc-step-icon.warn {
+  color: var(--fc-status-warning-text);
+}
+
+.fc-step-icon.pending {
+  color: var(--fc-text-muted);
+}
+
+.fc-step-line {
+  width: 2px;
+  flex: 1;
+  background-color: var(--fc-border);
+  margin-top: 4px;
+}
+
+.fc-timeline-step:last-child .fc-step-line {
+  display: none;
+}
+
+.fc-step-content {
+  flex: 1;
+  padding-bottom: 12px;
+}
+
+.fc-step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.fc-step-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fc-text-primary);
+}
+
+.fc-step-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--fc-radius-full);
+}
+
+.fc-step-pill.completed {
+  background-color: var(--fc-status-success-bg);
+  color: var(--fc-status-success-text);
+}
+
+.fc-step-pill.warning {
+  background-color: var(--fc-status-warning-bg);
+  color: var(--fc-status-warning-text);
+}
+
+.fc-step-pill.pending {
+  background-color: var(--fc-bg-subtle);
+  color: var(--fc-text-muted);
+}
+
+.fc-step-desc {
+  font-size: 12.5px;
+  color: var(--fc-text-secondary);
+}
