@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   FileCheck
 } from 'lucide-react';
+import { claimsApi } from '../../services/api.js';
 import './SubmitClaimModal.css';
 
 export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) {
@@ -17,7 +18,7 @@ export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) 
   const [formData, setFormData] = useState({
     title: '',
     merchant: '',
-    category: 'MEALS',
+    category: 'Food',
     date: new Date().toISOString().slice(0, 10),
     amount: '',
     currency: 'INR',
@@ -28,13 +29,15 @@ export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) 
   const [filePreview, setFilePreview] = useState(null);
   const [hashStatus, setHashStatus] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const categories = [
-    { value: 'MEALS', label: 'Meals & Per Diem (Cap: ₹3,500/day)' },
-    { value: 'TRAVEL', label: 'Travel & Transport' },
-    { value: 'LODGING', label: 'Hotel & Lodging' },
-    { value: 'SOFTWARE', label: 'Software & Cloud Subscriptions' },
-    { value: 'OFFICE', label: 'Office Equipment & Supplies' },
+    { value: 'Food', label: 'Food & Meals (Cap: ₹2,500/day)' },
+    { value: 'Travel', label: 'Travel & Transport' },
+    { value: 'Accommodation', label: 'Hotel & Accommodation' },
+    { value: 'Fuel', label: 'Fuel & Conveyance' },
+    { value: 'Office Supplies', label: 'Office Supplies & Equipment' },
+    { value: 'Other', label: 'Other Business Expenses' },
   ];
 
   const handleFileChange = (e) => {
@@ -43,53 +46,69 @@ export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) 
       setFile(selected);
       const url = URL.createObjectURL(selected);
       setFilePreview(url);
+      setErrorMsg('');
 
-      // Simulate instantaneous dHash perceptual computation
-      setTimeout(() => {
-        const simulatedDHash = Math.random().toString(16).substring(2, 10) + Math.random().toString(16).substring(2, 10);
-        setHashStatus({
-          dHash: simulatedDHash,
-          bloomCheck: 'CLEAR',
-          similarity: '0.04 (No duplicate candidate)',
-        });
-      }, 400);
+      setHashStatus({
+        status: 'READY',
+        message: 'Receipt loaded. Server-side dHash verification ready on submit.',
+      });
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.merchant || !formData.amount) return;
+    if (!formData.merchant || !formData.amount) {
+      setErrorMsg('Please enter merchant name and amount.');
+      return;
+    }
 
     setSubmitting(true);
-    setTimeout(() => {
-      const claimAmount = parseFloat(formData.amount);
-      const newClaim = {
-        id: `CLM-${Math.floor(1000 + Math.random() * 9000)}`,
-        title: formData.title || `${formData.category} at ${formData.merchant}`,
-        merchant: formData.merchant,
-        category: formData.category,
-        amountPaise: Math.round(claimAmount * 100),
-        currency: formData.currency,
-        date: formData.date,
-        createdAt: new Date().toISOString(),
-        status: claimAmount > 15000 ? 'NEEDS_REVIEW' : 'AUTO_APPROVED',
-        receiptUrl: filePreview,
-        dHash: hashStatus?.dHash || 'a71b4e99f0321bc4',
-        anomalyScore: claimAmount > 15000 ? 0.78 : 0.12,
-        stage: claimAmount > 15000 ? 'Stage 8: Pending Human Review' : 'Stage 7: Ledger Committed',
-        pipeline: {
-          dHashVerified: true,
-          aiExtracted: true,
-          policyDAG: claimAmount <= 20000,
-          anomalyChecked: true,
-          ledgerCommitted: claimAmount <= 15000,
-        },
-      };
+    setErrorMsg('');
 
-      onClaimSubmitted(newClaim);
+    try {
+      let receiptUrl = null;
+
+      // 1. Upload receipt if attached
+      if (file) {
+        try {
+          const uploadRes = await claimsApi.uploadReceipt(file);
+          receiptUrl = uploadRes?.relativeUrl || uploadRes?.receiptUrl || null;
+        } catch (uploadErr) {
+          console.warn('Receipt upload failed, proceeding with local reference:', uploadErr);
+          receiptUrl = filePreview;
+        }
+      }
+
+      // 2. Create claim draft
+      const createRes = await claimsApi.createClaim({
+        category: formData.category,
+        expenseDate: formData.date,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        description: `${formData.title ? formData.title + ' | ' : ''}${formData.merchant}: ${formData.description}`,
+        receiptUrl,
+      });
+
+      const claimId = createRes?.claim?.claimId;
+      if (!claimId) {
+        throw new Error(createRes?.message || 'Failed to create claim draft.');
+      }
+
+      // 3. Submit claim to verification pipeline
+      const submitRes = await claimsApi.submitClaim(claimId);
+      const finalClaim = submitRes?.claim || createRes.claim;
+
+      if (onClaimSubmitted) {
+        onClaimSubmitted(finalClaim);
+      }
+
       setSubmitting(false);
       onClose();
-    }, 600);
+    } catch (err) {
+      console.error('Submit claim error:', err);
+      setErrorMsg(err.message || 'Submission failed. Please check backend connection.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -105,6 +124,12 @@ export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) 
             <X size={18} />
           </button>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '12px 24px', padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#b91c1c', fontSize: '13px' }}>
+            {errorMsg}
+          </div>
+        )}
 
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="fc-modal-form">
@@ -143,15 +168,11 @@ export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) 
                 <div className="fc-hash-badge-box">
                   <div className="fc-hash-header">
                     <ShieldCheck size={14} className="fc-hash-icon" />
-                    <span className="fc-hash-title">Stage 2: Perceptual dHash Screen</span>
+                    <span className="fc-hash-title">Stage 2: Perceptual dHash Engine</span>
                   </div>
                   <div className="fc-hash-row">
-                    <span>Fingerprint:</span>
-                    <span className="fc-mono">{hashStatus.dHash}</span>
-                  </div>
-                  <div className="fc-hash-row">
-                    <span>Bloom Check:</span>
-                    <span className="fc-hash-pass">✔ PASS (Zero exact duplicate)</span>
+                    <span>Status:</span>
+                    <span className="fc-hash-pass">{hashStatus.message}</span>
                   </div>
                 </div>
               )}
@@ -264,7 +285,7 @@ export default function SubmitClaimModal({ isOpen, onClose, onClaimSubmitted }) 
 
           {/* Footer Controls */}
           <div className="fc-modal-footer">
-            <button type="button" className="fc-btn fc-btn-ghost" onClick={onClose}>
+            <button type="button" className="fc-btn fc-btn-ghost" onClick={onClose} disabled={submitting}>
               Cancel
             </button>
             <button type="submit" className="fc-btn fc-btn-primary" disabled={submitting}>

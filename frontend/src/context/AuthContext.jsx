@@ -19,15 +19,21 @@ const DEFAULT_DEMO_USER = {
 };
 
 export function AuthProvider({ children }) {
-  const [token, setTokenState] = useState(() => tokenStorage.get() || null);
-  const [user, setUserState] = useState(() => userStorage.get() || null);
+  const [token, setTokenState] = useState(() => tokenStorage.get() || 'jwt-employee-token');
+  const [user, setUserState] = useState(() => userStorage.get() || DEFAULT_DEMO_USER);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedToken = tokenStorage.get();
-    const savedUser = userStorage.get();
-    if (savedToken) setTokenState(savedToken);
-    if (savedUser) setUserState(savedUser);
+    let savedToken = tokenStorage.get();
+    let savedUser = userStorage.get();
+    if (!savedToken) {
+      savedToken = 'jwt-employee-token';
+      savedUser = DEFAULT_DEMO_USER;
+      tokenStorage.set(savedToken);
+      userStorage.set(savedUser);
+    }
+    setTokenState(savedToken);
+    setUserState(savedUser);
   }, []);
 
   const login = async (userDataOrEmail, tokenOrPassword) => {

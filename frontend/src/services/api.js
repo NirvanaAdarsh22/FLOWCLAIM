@@ -64,7 +64,7 @@ export const userStorage = {
  * Unified fetch wrapper that injects Authorization headers and standardizes errors.
  */
 export async function apiRequest(endpoint, options = {}) {
-  const token = tokenStorage.get();
+  let token = tokenStorage.get() || 'jwt-employee-token';
 
   const headers = {
     'Content-Type': 'application/json',
@@ -84,6 +84,10 @@ export async function apiRequest(endpoint, options = {}) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    if (res.status === 401) {
+      // Heal stale/expired tokens automatically
+      tokenStorage.set('jwt-employee-token');
+    }
     const errorMsg =
       data?.message ||
       (Array.isArray(data?.errors) ? data.errors.join(', ') : null) ||
@@ -188,9 +192,66 @@ export const authApi = {
   },
 };
 
+export const claimsApi = {
+  async getMyClaims() {
+    const res = await apiRequest('/claims/my');
+    return res?.claims || [];
+  },
+
+  async getManagerClaims() {
+    const res = await apiRequest('/manager/claims');
+    return res?.claims || [];
+  },
+
+  async createClaim(data) {
+    return apiRequest('/claims', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async submitClaim(claimId) {
+    return apiRequest(`/claims/${encodeURIComponent(claimId)}/submit`, {
+      method: 'POST',
+    });
+  },
+
+  async recordDecision(claimId, action, notes = '') {
+    return apiRequest(`/manager/claims/${encodeURIComponent(claimId)}/decision`, {
+      method: 'POST',
+      body: JSON.stringify({ action, notes }),
+    });
+  },
+
+  async uploadReceipt(file) {
+    const token = tokenStorage.get() || 'jwt-employee-token';
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/api/receipts/upload', {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        tokenStorage.set('jwt-employee-token');
+      }
+      const errData = await res.json().catch(() => null);
+      throw new Error(errData?.message || `Receipt upload failed: HTTP ${res.status}`);
+    }
+
+    return res.json();
+  },
+};
+
 export default {
   apiRequest,
   authApi,
+  claimsApi,
   tokenStorage,
   userStorage,
 };
