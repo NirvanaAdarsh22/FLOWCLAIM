@@ -14,6 +14,8 @@ import { createReceiptAiAdapter } from './services/stageAdapters.js';
 import { createProcessClaimProcessor } from './processors/processClaim.js';
 import { createCommitManagerApprovalProcessor } from './processors/commitManagerApproval.js';
 import { createReconciliationService } from './services/reconciliationService.js';
+import * as policyEngine from '../../packages/policy-engine/src/index.js';
+import { createAnomalyEngine } from '../../packages/anomaly-engine/src/index.js';
 
 async function bootstrap() {
   console.log(`[FlowClaim Worker] Initializing on queue '${QUEUE_NAME}' (env: ${config.env})...`);
@@ -43,16 +45,26 @@ async function bootstrap() {
   const claimState = createClaimStateClient();
   const storage = createReceiptStorageClient();
   const receiptAi = createReceiptAiAdapter();
+  const anomalyEngine = createAnomalyEngine({ config: { k: 5, threshold: 2.5 } });
+  const ledger = {
+    async commitClaim(input) {
+      return { status: 'COMMITTED', ledgerEntryId: `TX-LEDGER-${input.claimId}-${Date.now()}` };
+    },
+  };
 
   const processClaimProcessor = createProcessClaimProcessor({
     claimState,
     storage,
     fraudEngine,
     receiptAi,
+    policyEngine,
+    anomalyEngine,
+    ledger,
   });
 
   const commitManagerApprovalProcessor = createCommitManagerApprovalProcessor({
     claimState,
+    ledger,
   });
 
   const reconciliationService = createReconciliationService({

@@ -35,6 +35,38 @@ export function createReceiptStorageClient(customConfig = {}) {
         };
       }
 
+      // Support direct HTTP URLs or Express static uploads paths
+      if (objectKey.startsWith('http://') || objectKey.startsWith('https://')) {
+        try {
+          const res = await fetch(objectKey);
+          if (res.ok) {
+            const arrayBuffer = await res.arrayBuffer();
+            return {
+              bytes: new Uint8Array(arrayBuffer),
+              contentType: res.headers.get('content-type') || 'image/jpeg',
+            };
+          }
+        } catch {
+          // fallback to S3 endpoint resolution
+        }
+      }
+
+      if (objectKey.startsWith('/uploads/') || objectKey.startsWith('uploads/')) {
+        const path = objectKey.startsWith('/') ? objectKey : `/${objectKey}`;
+        try {
+          const res = await fetch(`http://localhost:5000${path}`);
+          if (res.ok) {
+            const arrayBuffer = await res.arrayBuffer();
+            return {
+              bytes: new Uint8Array(arrayBuffer),
+              contentType: res.headers.get('content-type') || 'image/jpeg',
+            };
+          }
+        } catch {
+          // fallback
+        }
+      }
+
       const endpoint = s3Config.endpoint.replace(/\/$/, '');
       const bucket = s3Config.bucket;
       const url = s3Config.forcePathStyle
