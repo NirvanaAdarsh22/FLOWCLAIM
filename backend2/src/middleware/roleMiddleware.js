@@ -8,7 +8,10 @@ const roleMiddleware = (...allowedRoles) => {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRole = (req.user.role || "").toLowerCase();
+    const isAllowed = allowedRoles.some((r) => r.toLowerCase() === userRole);
+
+    if (!isAllowed) {
       return res.status(403).json({
         success: false,
         message: "Access denied. You do not have permission."

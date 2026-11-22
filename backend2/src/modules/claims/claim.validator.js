@@ -8,7 +8,8 @@ export const createClaimSchema = z.object({
   amount: z.number().positive("Amount must be greater than 0"),
   currency: z.string().default("INR"),
   description: z.string().optional().default(""),
-  receiptUrl: z.string().url("Valid receipt URL required").optional().nullable()
+  receiptUrl: z.string().optional().nullable(),
+  receiptFingerprint: z.string().optional().nullable()
 });
 
 export default {
