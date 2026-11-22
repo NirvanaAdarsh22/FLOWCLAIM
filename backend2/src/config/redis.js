@@ -1,11 +1,12 @@
-
 import Redis from "ioredis";
 import env from "./env.js";
 
 const redis = new Redis(env.REDIS_URL, {
     lazyConnect: true,
-    maxRetriesPerRequest: 3,
-    enableReadyCheck: true
+    maxRetriesPerRequest: 1,
+    connectTimeout: 2000,
+    enableReadyCheck: false,
+    retryStrategy: (times) => (times > 2 ? null : 1000)
 });
 
 redis.on("connect", () => {
@@ -13,7 +14,7 @@ redis.on("connect", () => {
 });
 
 redis.on("error", (error) => {
-    console.error("Redis connection error:", error.message);
+    console.warn("Redis connection notice:", error.message);
 });
 
 export default redis;
