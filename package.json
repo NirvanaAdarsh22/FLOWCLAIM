@@ -1,2 +1,20 @@
 {
+  "name": "flowclaim",
+  "version": "1.0.0",
+  "description": "FlowClaim Autonomous Multi-Stage Expense Verification Platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/start-dev.js",
+    "dev:backend": "node backend2/src/server.js",
+    "dev:worker": "node worker/src/worker.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start": "node scripts/start-dev.js",
+    "test:worker": "npm --prefix worker test",
+    "test:backend": "npm --prefix backend2 test",
+    "test:fraud": "node --test packages/fraud-engine/tests/**/*.test.js",
+    "test:policy": "node --test packages/policy-engine/tests/**/*.test.js",
+    "test:anomaly": "node --test packages/anomaly-engine/tests/**/*.test.js",
+    "test:ledger": "node --test packages/ledger/tests/**/*.test.js"
+  }
 }
